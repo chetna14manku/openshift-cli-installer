@@ -223,5 +223,8 @@ def get_kubeadmin_token(cluster_data):
         ),
         hide_log_command=True,
     )
-    yield run_command(shlex.split("oc whoami -t"))[1].strip()
+    yield run_command(
+        shlex.split("oc whoami -t"),
+        hide_log_command=True,
+    )[1].strip()
     run_command(shlex.split("oc logout"))

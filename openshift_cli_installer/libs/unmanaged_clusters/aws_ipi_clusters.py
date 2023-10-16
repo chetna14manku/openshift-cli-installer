@@ -240,7 +240,7 @@ def run_aws_installer_command(cluster_data, action, raise_on_failure):
     res, out, err = run_command(
         command=shlex.split(
             f"{cluster_data['openshift-install-binary']} {action} cluster --dir"
-            f" {cluster_data['install-dir']}"
+            f" {cluster_data['install-dir']} --log-level=error"
         ),
         capture_output=False,
         check=False,

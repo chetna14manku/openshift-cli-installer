@@ -104,3 +104,4 @@ clusters:
   worker_replicas: 2
   worker_flavor: m5.4xlarge
   worker_root_disk_size: 128
+  log-level: info # optional, default: "info", supported options are debug, info, warn, error

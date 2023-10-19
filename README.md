@@ -149,9 +149,9 @@ podman run quay.io/redhat_msi/openshift-cli-installer \
     --registry-config-file=registry-config.json \
     --s3-bucket-name=openshift-cli-installer \
     --s3-bucket-path=install-folders \
-    --cluster 'name=ipi1;base_domain=aws.interop.ccitredhat.com;platform=aws;region=us-east-2;version=4.14.0-ec.2;worker_flavor=m5.xlarge;log-level=error'
+    --cluster 'name=ipi1;base_domain=aws.interop.ccitredhat.com;platform=aws;region=us-east-2;version=4.14.0-ec.2;worker_flavor=m5.xlarge;log_level=info'
 ```
-  * Pass `log-level=error` to cluster config if user want to hide the openshift-installer logs which contains `kubeadmin` password. 
+  * Default `log_level=error` is set for cluster config to hide the openshift-installer logs which contains kubeadmin password.
 
 ##### ROSA cluster
 

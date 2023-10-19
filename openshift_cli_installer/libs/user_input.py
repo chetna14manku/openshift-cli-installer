@@ -131,7 +131,7 @@ class UserInput:
             self.is_platform_supported()
             self.assert_unique_cluster_names()
             self.assert_managed_acm_clusters_user_input()
-
+            self.assert_aws_ipi_installer_log_level_user_input()
             self.assert_aws_ipi_user_input()
             self.assert_aws_osd_user_input()
             self.assert_acm_clusters_user_input()
@@ -205,6 +205,24 @@ class UserInput:
 
             self.assert_public_ssh_key_file_exists()
             self.assert_registry_config_file_exists()
+
+    def assert_aws_ipi_installer_log_level_user_input(self):
+        supported_log_levels = ["debug", "info", "warn", "error"]
+        unsupported_log_levels = []
+        for _cluster in self.clusters:
+            if _cluster["platform"] == AWS_STR:
+                log_level = _cluster.get("log_level", "error")
+                if log_level not in supported_log_levels:
+                    unsupported_log_levels.append(
+                        f"LogLevel {log_level} for cluster {_cluster['name']}"
+                    )
+
+        if unsupported_log_levels:
+            self.logger.error(
+                f"{unsupported_log_levels} not supported for openshift-installer cli."
+                f" Supported options are {supported_log_levels}"
+            )
+            raise click.Abort()
 
     def assert_public_ssh_key_file_exists(self):
         if not self.ssh_key_file or not os.path.exists(self.ssh_key_file):

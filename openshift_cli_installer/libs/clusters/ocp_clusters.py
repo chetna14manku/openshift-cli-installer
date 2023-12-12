@@ -6,7 +6,7 @@ from clouds.aws.aws_utils import set_and_verify_aws_credentials
 from clouds.gcp.utils import get_gcp_regions
 from simple_logger.logger import get_logger
 
-from openshift_cli_installer.libs.clusters.aws_ipi_cluster import AwsIpiCluster
+from openshift_cli_installer.libs.clusters.ipi_cluster import IpiCluster
 from openshift_cli_installer.libs.clusters.osd_cluster import OsdCluster
 from openshift_cli_installer.libs.clusters.rosa_cluster import RosaCluster
 from openshift_cli_installer.libs.user_input import UserInput
@@ -18,6 +18,7 @@ from openshift_cli_installer.utils.const import (
     PRODUCTION_STR,
     ROSA_STR,
     STAGE_STR,
+    GCP_STR,
 )
 
 
@@ -27,6 +28,7 @@ class OCPClusters(UserInput):
 
         self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
         self.aws_ipi_clusters = []
+        self.gcp_ipi_clusters = []
         self.aws_osd_clusters = []
         self.rosa_clusters = []
         self.hypershift_clusters = []
@@ -46,7 +48,10 @@ class OCPClusters(UserInput):
     def add_to_cluster_lists(self, ocp_cluster, **kwargs):
         _cluster_platform = ocp_cluster["platform"]
         if _cluster_platform == AWS_STR:
-            self.aws_ipi_clusters.append(AwsIpiCluster(ocp_cluster=ocp_cluster, **kwargs))
+            self.aws_ipi_clusters.append(IpiCluster(ocp_cluster=ocp_cluster, **kwargs))
+
+        if _cluster_platform == GCP_STR:
+            self.gcp_ipi_clusters.append(IpiCluster(ocp_cluster=ocp_cluster, **kwargs))
 
         if _cluster_platform == AWS_OSD_STR:
             self.aws_osd_clusters.append(OsdCluster(ocp_cluster=ocp_cluster, **kwargs))
@@ -68,6 +73,7 @@ class OCPClusters(UserInput):
             + self.rosa_clusters
             + self.hypershift_clusters
             + self.gcp_osd_clusters
+            + self.gcp_ipi_clusters
         )
 
     @property
@@ -137,11 +143,12 @@ class OCPClusters(UserInput):
                 set_and_verify_aws_credentials(region_name=_region)
 
     def is_region_support_gcp(self):
-        if self.gcp_osd_clusters:
+        _clusters = self.gcp_ipi_clusters + self.gcp_osd_clusters
+        if _clusters:
             self.logger.info("Check if regions are GCP-supported.")
             supported_regions = get_gcp_regions(gcp_service_account_file=self.gcp_service_account_file)
             unsupported_regions = []
-            for _cluster in self.gcp_osd_clusters:
+            for _cluster in _clusters:
                 cluster_region = _cluster.cluster_info["region"]
                 if cluster_region not in supported_regions:
                     unsupported_regions.append(f"cluster: {_cluster.cluster_info['name']}, region: {cluster_region}")

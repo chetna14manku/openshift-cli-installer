@@ -1,6 +1,6 @@
 import json
 
-from openshift_cli_installer.utils.cluster_versions import get_aws_versions, set_clusters_versions
+from openshift_cli_installer.utils.cluster_versions import get_ipi_cluster_versions, set_clusters_versions
 
 
 def update_aws_clusters_versions(clusters, _test=False):
@@ -17,6 +17,6 @@ def get_all_versions(_test=None):
         with open("openshift_cli_installer/tests/all_aws_versions.json") as fd:
             base_available_versions = json.load(fd)
     else:
-        base_available_versions = get_aws_versions()
+        base_available_versions = get_ipi_cluster_versions()
 
     return base_available_versions

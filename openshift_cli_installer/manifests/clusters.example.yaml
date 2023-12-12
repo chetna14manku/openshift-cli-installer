@@ -105,3 +105,16 @@ clusters:
   worker-flavor: m5.4xlarge
   worker-root-disk-size: 128
   log_level: info # optional, default: "error", supported options are debug, info, warn, error
+
+# GCP IPI cluster
+- name: gcp-ipi-c1
+  base-domain: gcp.domain.example.com
+  platform: aws
+  region: us-east1
+  version: "4.13"
+  stream: stable
+  timeout: 4h
+  worker-replicas: 2
+  worker-flavor: custom-4-16384
+  worker-root-disk-size: 128
+  log_level: info # optional, default: "error", supported options are debug, info, warn, error

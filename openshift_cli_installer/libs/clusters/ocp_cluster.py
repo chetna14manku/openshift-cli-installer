@@ -191,7 +191,7 @@ class OCPCluster(UserInput):
             "timeout",
             "terraform",
             "timeout_watch",
-            "aws_base_available_versions",
+            "ipi_base_available_versions",
             "_already_processed",
         )
         for _key, _val in self.to_dict.items():

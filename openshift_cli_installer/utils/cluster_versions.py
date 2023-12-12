@@ -15,6 +15,7 @@ from openshift_cli_installer.utils.const import (
     GCP_OSD_STR,
     HYPERSHIFT_STR,
     ROSA_STR,
+    IPI_BASED_PLATFORMS,
 )
 
 
@@ -59,7 +60,7 @@ def set_clusters_versions(clusters, base_available_versions):
                 click.secho(f"{err_msg}", fg=ERROR_LOG_COLOR)
                 raise click.Abort()
 
-        if platform == AWS_STR:
+        if platform in IPI_BASED_PLATFORMS:
             version_url = [
                 url for url, versions in base_available_versions.items() if cluster_data["version"] in versions
             ]
@@ -142,11 +143,11 @@ def get_regex_str_for_version_match(platform, stream, x86_64_str):
 
 def get_cluster_stream(cluster_data):
     _platform = cluster_data["platform"]
-    return cluster_data["stream"] if _platform == AWS_STR else cluster_data["channel-group"]
+    return cluster_data["stream"] if _platform in IPI_BASED_PLATFORMS else cluster_data["channel-group"]
 
 
 @functools.cache
-def get_aws_versions():
+def get_ipi_cluster_versions():
     versions_dict = {}
     for source_repo in ("quay.io/openshift-release-dev/ocp-release", "registry.ci.openshift.org/ocp/release"):
         versions_dict[source_repo] = run_command(command=shlex.split(f"regctl tag ls {source_repo}"), check=False)[

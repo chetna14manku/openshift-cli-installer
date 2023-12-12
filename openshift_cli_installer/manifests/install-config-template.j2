@@ -8,9 +8,15 @@ compute:
   name: worker
   platform:
     {{ platform }}:
-      type: {{ worker_flavor|default("m5.4xlarge", true) }}
+      type: {{ worker_flavor }}
+      {% if platform == "aws" %}
       rootVolume:
         size: {{ worker_root_disk_size|default("128", true) }}
+      {% endif %}
+      {% if platform == "gcp" %}
+      osDisk:
+        diskSizeGB: {{ worker_root_disk_size|default("128", true) }}
+      {% endif %}
   replicas: {{ worker_replicas|default("3", true) }}
 controlPlane:
   architecture: amd64
@@ -32,6 +38,9 @@ networking:
 platform:
   {{ platform }}:
     region: {{ region }}
+    {% if platform == "gcp" %}
+    projectID: {{ gcp_project_id }}
+    {% endif %}
 publish: External
 fips: {{ fips|default("false", true) }}
 sshKey: {{ ssh_key }}

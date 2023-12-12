@@ -37,6 +37,18 @@ Action also can be passed to the CLI as `--action create/destroy` instead of spe
   * `--docker-config-file`: Path to Docker config.json file, defaults to `~/.docker/config.json`. File must include token for `registry.ci.openshift.org`
   * `--ssh-key-file`: id_rsa file path
 
+* GCP IPI clusters:
+  * The installer output is saved in the <cluster directory>.
+  * The data is used for cluster destroy.
+  * `platform=gcp`: Must pass in cluster parameters
+  * `base-domain`: cluster parameter is mandatory
+  * `--gcp-service-account-file`: Path to GCP service account json.  
+    To create the file, create a service account and download it:  
+    1. Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=<project>
+    2. Select the service account -> "Create Key"
+    3. Select the Key Type as `JSON` and click Create
+  * `--ssh-key-file`: id_rsa file path
+
 * ROSA / Hypershift clusters:
   * `platform=rosa`: Must pass in cluster parameters
   * `--aws-account-id`: AWS account ID for Hypershift clusters
@@ -67,7 +79,7 @@ Every call to the openshift installer cli must have at least one `--cluster` opt
   * To set cluster create / destroy timeout (not applicable for AWS IPI clusters), pass `--cluster ...timeout=1h'`; default is 60 minutes.
   * `timeout` and `expiration-time` format examples: `1h`, `30m`, `3600s`
   * `ocm-env`: OCM environment to deploy the cluster; available options: `stage` or `production` (defaults to `stage`). AWS-IPI clusters only use `production`.
-  * AWS IPI:
+  * AWS/GCP IPI:
     * To overwrite cluster config, check [install-config-template.j2](openshift_cli_installer/manifests/install-config-template.j2) parameters.
     * Every parameter (marked with double curly brackets in the template) can be overwritten.
     * For example: to overwrite `{{ fips|default("false", true) }}` pass `--cluster '...fips=true'`
@@ -184,6 +196,7 @@ When using the container pass:
 ##### AWS IPI cluster
 
 ###### Versions
+[Same for GCP IPI clusters]
   * Supported `streams` are: `stable`, `nightly`, `rc`, `ci` and `ec`, Supported architecture(s): `X86_64`
   * If passed exact version this version will be used (if exists), Example: 3.14.9
   * If passed partial version, latest version will be used, Example: 4.13 install 4.13.9 (latest)

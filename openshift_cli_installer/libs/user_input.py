@@ -12,7 +12,6 @@ from openshift_cli_installer.utils.cli_utils import (
 )
 from openshift_cli_installer.utils.const import (
     AWS_OSD_STR,
-    AWS_STR,
     CREATE_STR,
     GCP_STR,
     GCP_OSD_STR,
@@ -207,19 +206,17 @@ class UserInput:
         if any([_cluster["platform"] in IPI_BASED_PLATFORMS for _cluster in self.clusters]):
             self.assert_ipi_installer_log_level_user_input()
             self.assert_registry_config_file_exists()
-            self.assert_aws_ipi_user_input()
-            self.assert_gcp_user_input()
+            self.assert_docker_config_file_exists()
             if self.create:
                 self.assert_public_ssh_key_file_exists()
 
-    def assert_aws_ipi_user_input(self):
-        if any([_cluster["platform"] == AWS_STR for _cluster in self.clusters]):
-            if not self.docker_config_file or not os.path.exists(self.docker_config_file):
-                self.logger.error(
-                    "Docker config file is required for AWS installations."
-                    f" {self.docker_config_file} file does not exist."
-                )
-                raise click.Abort()
+    def assert_docker_config_file_exists(self):
+        if not self.docker_config_file or not os.path.exists(self.docker_config_file):
+            self.logger.error(
+                "Docker config file is required for IPI installations."
+                f" {self.docker_config_file} file does not exist."
+            )
+            raise click.Abort()
 
     def assert_ipi_installer_log_level_user_input(self):
         supported_log_levels = ["debug", "info", "warn", "error"]

@@ -1,6 +1,8 @@
 import os
 import shlex
 import json
+from pathlib import Path
+import shutil
 
 import click
 import yaml
@@ -93,6 +95,7 @@ class IpiCluster(OCPCluster):
         platform = self.cluster_info["platform"]
         if platform == GCP_STR:
             terraform_parameters["gcp_project_id"] = self.get_gcp_project_id()
+            self.save_gcp_service_account_file()
 
         worker_flavor = self.cluster.get("worker-flavor")
         if worker_flavor:
@@ -110,7 +113,7 @@ class IpiCluster(OCPCluster):
         if fips:
             terraform_parameters["fips"] = fips
 
-        cluster_install_config = get_install_config_j2_template(jinja_dict=terraform_parameters)
+        cluster_install_config = get_install_config_j2_template(jinja_dict=terraform_parameters, platform=platform)
 
         with open(os.path.join(self.cluster_info["cluster-dir"], "install-config.yaml"), "w") as fd:
             fd.write(yaml.dump(cluster_install_config))
@@ -132,6 +135,14 @@ class IpiCluster(OCPCluster):
             gcp_sa_file_content = json.load(fd)
 
         return gcp_sa_file_content["project_id"]
+
+    def save_gcp_service_account_file(self):
+        gcp_file_dir = os.path.join(os.getenv("HOME"), ".gcp")
+        Path(gcp_file_dir).mkdir(parents=True, exist_ok=True)
+
+        gcp_file_path = os.path.join(gcp_file_dir, "osServiceAccount.json")
+        self.logger.info(f"Saving GCP ServiceAccount file to {gcp_file_path}")
+        shutil.copy(self.gcp_service_account_file, gcp_file_path)
 
     def run_installer_command(self, action, raise_on_failure):
         run_after_failed_create_str = (

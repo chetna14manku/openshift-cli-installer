@@ -1,0 +1,39 @@
+---
+kind: InstallConfig
+apiVersion: v1
+baseDomain: {{ base_domain }}
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform:
+    gcp:
+      type: {{ worker_flavor }}
+      osDisk:
+        diskSizeGB: {{ worker_root_disk_size|default("128", true) }}
+  replicas: {{ worker_replicas|default("3", true) }}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 3
+metadata:
+  name: {{ name }}
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 10.0.0.0/16
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  gcp:
+    region: {{ region }}
+    projectID: {{ gcp_project_id }}
+publish: External
+fips: {{ fips|default("false", true) }}
+sshKey: {{ ssh_key }}
+pullSecret: '{{ pull_secret }}'

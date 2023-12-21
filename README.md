@@ -29,7 +29,7 @@ Action also can be passed to the CLI as `--action create/destroy` instead of spe
 * `--must-gather-output-dir`: Path to must-gather output dir. `must-gather` will try to collect data when cluster installation fails and cluster can be accessed.
 
 * AWS IPI clusters:
-  * The installer output is saved in the <cluster directory>.
+  * The installer output is saved in the `<cluster directory>`.
   * The data is used for cluster destroy.
   * `platform=aws`: Must pass in cluster parameters
   * `base-domain`: cluster parameter is mandatory
@@ -38,16 +38,12 @@ Action also can be passed to the CLI as `--action create/destroy` instead of spe
   * `--ssh-key-file`: id_rsa file path
 
 * GCP IPI clusters:
-  * The installer output is saved in the <cluster directory>.
+  * The installer output is saved in the `<cluster directory>`.
   * The data is used for cluster destroy.
   * `platform=gcp`: Must pass in cluster parameters
   * `base-domain`: cluster parameter is mandatory
-  * `--gcp-service-account-file`: Path to GCP service account json.  
-    To create the file, create a service account and download it:  
-    1. Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=<project>
-    2. Select the service account -> "Create Key"
-    3. Select the Key Type as `JSON` and click Create
-  * `--ssh-key-file`: id_rsa file path
+  * `--gcp-service-account-file`: Path to GCP service account json. The file will be copied to specific path `~/.gcp/osServiceAccount.json` for installer .
+     Follow [these](#steps-to-create-gcp-service-account-file) steps to get the ServiceAccount file.
 
 * ROSA / Hypershift clusters:
   * `platform=rosa`: Must pass in cluster parameters
@@ -61,11 +57,8 @@ Action also can be passed to the CLI as `--action create/destroy` instead of spe
 
 * GCP OSD clusters:
   * `platform=gcp-osd`: Must pass in cluster parameters
-  * `--gcp-service-account-file`: Path to GCP service account json.  
-    To create the file, create a service account and download it:  
-    1. Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=<project>
-    2. Select the service account -> "Create Key"
-    3. Select the Key Type as `JSON` and click Create
+  * `--gcp-service-account-file`: Path to GCP service account json.
+     Follow [these](#steps-to-create-gcp-service-account-file) steps to get the ServiceAccount file.
 
 ### Cluster parameters
 Every call to the openshift installer cli must have at least one `--cluster` option.  
@@ -93,6 +86,12 @@ Every call to the openshift installer cli must have at least one `--cluster` opt
       * To set `cidr`, pass `--cluster ...cidr=1.1.0.0/16'`
       * To set `private-subnets`, pass `--cluster ...private-subnets=10.1.1.0/24,10.1.2.0/24'`
       * To set `public-subnets`, pass `--cluster ...public-subnets=10.1.10.0/24,10.1.20.0/24'`
+
+#### Steps to create GCP Service Account File
+ To create the file, create a service account and download it:  
+ 1. Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=<project>
+ 2. Select the service account -> "Create Key"
+ 3. Select the Key Type as `JSON` and click Create
 
 ### ACM (Advanced Cluster Management)
 Managed clusters (Rosa, AWS and OSD) can be deployed with ACM and attached to ACM hub.
@@ -193,10 +192,9 @@ When using the container pass:
 
 #### One cluster
 
-##### AWS IPI cluster
+##### AWS/GCP IPI cluster
 
 ###### Versions
-[Same for GCP IPI clusters]
   * Supported `streams` are: `stable`, `nightly`, `rc`, `ci` and `ec`, Supported architecture(s): `X86_64`
   * If passed exact version this version will be used (if exists), Example: 3.14.9
   * If passed partial version, latest version will be used, Example: 4.13 install 4.13.9 (latest)

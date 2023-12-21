@@ -8,7 +8,7 @@ compute:
   name: worker
   platform:
     gcp:
-      type: {{ worker_flavor }}
+      type: {{ worker_flavor|default("custom-4-16384", true) }}
       osDisk:
         diskSizeGB: {{ worker_root_disk_size|default("128", true) }}
   replicas: {{ worker_replicas|default("3", true) }}

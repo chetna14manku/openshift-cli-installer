@@ -1,8 +1,8 @@
 import os
 import shlex
 import json
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import click
 import yaml
@@ -95,7 +95,6 @@ class IpiCluster(OCPCluster):
         platform = self.cluster_info["platform"]
         if platform == GCP_STR:
             terraform_parameters["gcp_project_id"] = self.get_gcp_project_id()
-            self.save_gcp_service_account_file()
 
         worker_flavor = self.cluster.get("worker-flavor")
         if worker_flavor:
@@ -136,18 +135,30 @@ class IpiCluster(OCPCluster):
 
         return gcp_sa_file_content["project_id"]
 
-    def save_gcp_service_account_file(self):
-        gcp_file_dir = os.path.join(os.getenv("HOME"), ".gcp")
-        Path(gcp_file_dir).mkdir(parents=True, exist_ok=True)
+    def move_gcp_service_account_file(self, action):
+        if self.cluster["platform"] == GCP_STR:
+            gcp_file_dir = os.path.join(os.path.expanduser("~"), ".gcp")
+            gcp_file_path = os.path.join(gcp_file_dir, "osServiceAccount.json")
+            tmp_file = os.path.join("/tmp", "installerTemp.json")
+            if action == CREATE_STR:
+                if os.path.exists(gcp_file_path):
+                    self.logger.info(f"File {gcp_file_path} already exists. Copying to {tmp_file}")
+                    shutil.copy(gcp_file_path, tmp_file)
+                else:
+                    Path(gcp_file_dir).mkdir(parents=True, exist_ok=True)
+                self.logger.info(f"Saving GCP ServiceAccount file to {gcp_file_path}")
+                shutil.copy(self.gcp_service_account_file, gcp_file_path)
 
-        gcp_file_path = os.path.join(gcp_file_dir, "osServiceAccount.json")
-        self.logger.info(f"Saving GCP ServiceAccount file to {gcp_file_path}")
-        shutil.copy(self.gcp_service_account_file, gcp_file_path)
+            if action == DESTROY_STR and os.path.exists(tmp_file):
+                self.logger.info(f"Restoring previous file contents of {gcp_file_path}")
+                shutil.copy(tmp_file, gcp_file_path)
+                os.remove(tmp_file)
 
     def run_installer_command(self, action, raise_on_failure):
         run_after_failed_create_str = (
             " after cluster creation failed" if action == DESTROY_STR and self.action == CREATE_STR else ""
         )
+        self.move_gcp_service_account_file(action=CREATE_STR)
         self.logger.info(f"{self.log_prefix}: Running cluster {action}{run_after_failed_create_str}")
         res, out, err = run_command(
             command=shlex.split(
@@ -164,6 +175,7 @@ class IpiCluster(OCPCluster):
             )
             if raise_on_failure:
                 raise click.Abort()
+        self.move_gcp_service_account_file(action=DESTROY_STR)
 
         return res, out, err
 
@@ -179,7 +191,6 @@ class IpiCluster(OCPCluster):
 
         self.timeout_watch = self.start_time_watcher()
         res, _, _ = self.run_installer_command(action=CREATE_STR, raise_on_failure=False)
-
         if not res:
             _rollback_on_error()
 

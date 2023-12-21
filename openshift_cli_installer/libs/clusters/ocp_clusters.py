@@ -143,8 +143,7 @@ class OCPClusters(UserInput):
                 set_and_verify_aws_credentials(region_name=_region)
 
     def is_region_support_gcp(self):
-        _clusters = self.gcp_ipi_clusters + self.gcp_osd_clusters
-        if _clusters:
+        if _clusters := self.gcp_ipi_clusters + self.gcp_osd_clusters:
             self.logger.info("Check if regions are GCP-supported.")
             supported_regions = get_gcp_regions(gcp_service_account_file=self.gcp_service_account_file)
             unsupported_regions = []

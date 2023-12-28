@@ -17,7 +17,7 @@ clusters:
 # AWS OSD cluster
 - name: aws-osd-c1
   platform: aws-osd
-  region: us-east-2
+  region: us-east-2 # optional, if not provided, region will be selected by automation which have the least number of VPCs.
   version: "4.13"
   channel-group: stable
   compute-machine-type: m5.4xlarge
@@ -97,7 +97,7 @@ clusters:
 - name: aws-ipi-c1
   base-domain: aws.domain.example.com
   platform: aws
-  region: us-east-2
+  region: us-east-2 # optional, if not provided, region will be selected by automation which have the least number of VPCs.
   version: "4.13"
   stream: stable
   timeout: 4h

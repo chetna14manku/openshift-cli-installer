@@ -66,7 +66,7 @@ Every call to the openshift installer cli must have at least one `--cluster` opt
 * Mandatory parameters:
   * name: The name of the cluster
   * platform: The platform to deploy the cluster on (supported platforms are: aws, rosa and hypershift)
-  * region: The region to deploy the cluster
+  * region: The region to deploy the cluster. Optional for AWS-IPI and AWS-OSD clusters, but mandatory for other (GCP, ROSA, Hypershift) clusters.
 * Optional parameters:
   * Parameter names should be separated by semicolons (`;`)
   * To set cluster create / destroy timeout (not applicable for AWS IPI clusters), pass `--cluster ...timeout=1h'`; default is 60 minutes.
@@ -212,6 +212,7 @@ podman run quay.io/redhat_msi/openshift-cli-installer \
     --cluster 'name=ipi1;base-domain=aws.interop.ccitredhat.com;platform=aws;region=us-east-2;version=4.14.0-ec.2;worker-flavor=m5.xlarge;log_level=info'
 ```
   * Default `log_level=error` is set for cluster config to hide the openshift-installer logs which contains kubeadmin password.
+  * If cluster `region` not passed, it will be selected by automation which have the least number of VPCs.
 
 ##### ROSA cluster
 

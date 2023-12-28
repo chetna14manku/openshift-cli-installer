@@ -1,4 +1,5 @@
 import base64
+import boto3
 import copy
 import os
 import shlex
@@ -24,6 +25,7 @@ from ocp_utilities.infra import get_client
 from ocp_utilities.must_gather import run_must_gather
 from ocp_utilities.utils import run_command
 from simple_logger.logger import get_logger
+from clouds.aws.utilities.delete_aws_resources import aws_region_names
 
 from openshift_cli_installer.libs.user_input import UserInput
 from openshift_cli_installer.utils.cluster_versions import (
@@ -31,6 +33,8 @@ from openshift_cli_installer.utils.cluster_versions import (
     get_split_version,
 )
 from openshift_cli_installer.utils.const import (
+    AWS_OSD_STR,
+    AWS_STR,
     CLUSTER_DATA_YAML_FILENAME,
     PRODUCTION_STR,
     S3_STR,
@@ -54,6 +58,9 @@ class OCPCluster(UserInput):
         else:
             self.cluster_info = copy.deepcopy(self.cluster)
 
+            if self.create:
+                self.check_and_assign_aws_cluster_region()
+
             self.cluster_info.update({
                 "display-name": self.cluster_info["name"],
                 "user-requested-version": self.cluster_info["version"],
@@ -63,7 +70,7 @@ class OCPCluster(UserInput):
                 "acm": self.cluster.get("acm") is True,
                 "acm-observability": self.cluster.get("acm-observability") is True,
                 "acm-observability-s3-region": self.cluster.get(
-                    "acm-observability-s3-region", self.cluster_info["region"]
+                    "acm-observability-s3-region", self.cluster_info.get("region")
                 ),
             })
             self.all_available_versions = {}
@@ -84,9 +91,7 @@ class OCPCluster(UserInput):
 
             self._add_s3_bucket_data()
 
-        self.log_prefix = (
-            f"[C:{self.cluster_info['name']}|P:{self.cluster_info['platform']}|R:{self.cluster_info['region']}]"
-        )
+        self.log_prefix = f"[C:{self.cluster_info['name']}|P:{self.cluster_info['platform']}|R:{self.cluster_info.get('region', 'auto-region')}]"
         self.timeout = tts(ts=self.cluster.get("timeout", TIMEOUT_60MIN))
 
         if not destroy_from_s3_bucket_or_local_directory:
@@ -138,6 +143,19 @@ class OCPCluster(UserInput):
             f"{f'{self.s3_bucket_path}/' if self.s3_bucket_path else ''}"
             f"{self.cluster_info['name']}-{self.cluster_info['shortuuid']}.zip"
         )
+
+    def check_and_assign_aws_cluster_region(self):
+        if self.cluster_info["platform"] in [AWS_STR, AWS_OSD_STR]:
+            if not self.cluster_info.get("region"):
+                region, vpcs = None, None
+                for _region in aws_region_names():
+                    num_vpcs = len(boto3.client(service_name="ec2", region_name=_region).describe_vpcs()["Vpcs"])
+                    if vpcs is None or num_vpcs < vpcs:
+                        region = _region
+                        vpcs = num_vpcs
+
+                self.logger.info(f"Assigning region {region} to cluster {self.cluster_info['name']}")
+                self.cluster_info["region"] = region
 
     def set_cluster_install_version(self):
         version = self.cluster_info["user-requested-version"]

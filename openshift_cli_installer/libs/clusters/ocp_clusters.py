@@ -6,7 +6,7 @@ from clouds.aws.aws_utils import set_and_verify_aws_credentials
 from clouds.gcp.utils import get_gcp_regions
 from simple_logger.logger import get_logger
 
-from openshift_cli_installer.libs.clusters.ipi_cluster import IpiCluster
+from openshift_cli_installer.libs.clusters.ipi_cluster import AwsIpiCluster, GcpIpiCluster
 from openshift_cli_installer.libs.clusters.osd_cluster import OsdCluster
 from openshift_cli_installer.libs.clusters.rosa_cluster import RosaCluster
 from openshift_cli_installer.libs.user_input import UserInput
@@ -48,10 +48,10 @@ class OCPClusters(UserInput):
     def add_to_cluster_lists(self, ocp_cluster, **kwargs):
         _cluster_platform = ocp_cluster["platform"]
         if _cluster_platform == AWS_STR:
-            self.aws_ipi_clusters.append(IpiCluster(ocp_cluster=ocp_cluster, **kwargs))
+            self.aws_ipi_clusters.append(AwsIpiCluster(ocp_cluster=ocp_cluster, **kwargs))
 
         if _cluster_platform == GCP_STR:
-            self.gcp_ipi_clusters.append(IpiCluster(ocp_cluster=ocp_cluster, **kwargs))
+            self.gcp_ipi_clusters.append(GcpIpiCluster(ocp_cluster=ocp_cluster, **kwargs))
 
         if _cluster_platform == AWS_OSD_STR:
             self.aws_osd_clusters.append(OsdCluster(ocp_cluster=ocp_cluster, **kwargs))

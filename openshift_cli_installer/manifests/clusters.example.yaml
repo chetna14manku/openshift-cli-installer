@@ -109,7 +109,7 @@ clusters:
 # GCP IPI cluster
 - name: gcp-ipi-c1
   base-domain: gcp.domain.example.com
-  platform: aws
+  platform: gcp
   region: us-east1
   version: "4.13"
   stream: stable

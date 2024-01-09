@@ -73,7 +73,9 @@ Every call to the openshift installer cli must have at least one `--cluster` opt
   * `timeout` and `expiration-time` format examples: `1h`, `30m`, `3600s`
   * `ocm-env`: OCM environment to deploy the cluster; available options: `stage` or `production` (defaults to `stage`). AWS-IPI clusters only use `production`.
   * AWS/GCP IPI:
-    * To overwrite cluster config, check [<aws//gcp>-install-config-template.j2](openshift_cli_installer/manifests) parameters.
+    * To overwrite cluster config, check below manifests for parameters
+      * [aws-install-config-template.j2](openshift_cli_installer/manifests/aws-install-config-template.j2)
+      * [gcp-install-config-template.j2](openshift_cli_installer/manifests/gcp-install-config-template.j2)
     * Every parameter (marked with double curly brackets in the template) can be overwritten.
     * For example: to overwrite `{{ fips|default("false", true) }}` pass `--cluster '...fips=true'`
   * ROSA / Hypershift:

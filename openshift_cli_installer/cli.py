@@ -17,6 +17,7 @@ from openshift_cli_installer.utils.const import (
     DESTROY_CLUSTERS_FROM_S3_BASE_DATA_DIRECTORY,
     DESTROY_STR,
 )
+from openshift_cli_installer.utils.gcp_utils import set_gcp_configuration, restore_gcp_configuration
 
 
 @click.command("installer")
@@ -136,7 +137,6 @@ For example:
     help="""
 \b
 Destroy clusters from S3 bucket, --s3-bucket-name is required and optional --s3-bucket-path.
-.
     """,
     show_default=True,
     is_flag=True,
@@ -211,34 +211,40 @@ def main(**kwargs):
     Create/Destroy Openshift cluster/s
     """
     kwargs.pop("pdb", None)
-    UserInput(**kwargs)
+    user_input = UserInput(**kwargs)
 
     if kwargs["dry_run"]:
         return
 
-    if (
-        kwargs["destroy_clusters_from_s3_bucket"]
-        or kwargs["destroy_clusters_from_install_data_directory"]
-        or kwargs["destroy_clusters_from_install_data_directory_using_s3_bucket"]
-        or kwargs["destroy_clusters_from_s3_bucket_query"]
-    ):
-        clusters_kwargs = {"destroy_from_s3_bucket_or_local_directory": True}
-        clusters_kwargs.update(destroy_clusters_from_s3_bucket_or_local_directory(**kwargs))
+    try:
+        gcp_params = set_gcp_configuration(user_input=user_input)
 
-        try:
-            clusters = OCPClusters(**clusters_kwargs)
+        if (
+            kwargs["destroy_clusters_from_s3_bucket"]
+            or kwargs["destroy_clusters_from_install_data_directory"]
+            or kwargs["destroy_clusters_from_install_data_directory_using_s3_bucket"]
+            or kwargs["destroy_clusters_from_s3_bucket_query"]
+        ):
+            clusters_kwargs = {"destroy_from_s3_bucket_or_local_directory": True}
+            clusters_kwargs.update(destroy_clusters_from_s3_bucket_or_local_directory(**kwargs))
+
+            try:
+                clusters = OCPClusters(**clusters_kwargs)
+                clusters.run_create_or_destroy_clusters()
+            finally:
+                shutil.rmtree(DESTROY_CLUSTERS_FROM_S3_BASE_DATA_DIRECTORY, ignore_errors=True)
+
+        else:
+            clusters = OCPClusters(**kwargs)
             clusters.run_create_or_destroy_clusters()
-        finally:
-            shutil.rmtree(DESTROY_CLUSTERS_FROM_S3_BASE_DATA_DIRECTORY, ignore_errors=True)
 
-    else:
-        clusters = OCPClusters(**kwargs)
-        clusters.run_create_or_destroy_clusters()
+            if kwargs["action"] == CREATE_STR:
+                clusters.install_acm_on_clusters()
+                clusters.enable_observability_on_acm_clusters()
+                clusters.attach_clusters_to_acm_cluster_hub()
 
-        if kwargs["action"] == CREATE_STR:
-            clusters.install_acm_on_clusters()
-            clusters.enable_observability_on_acm_clusters()
-            clusters.attach_clusters_to_acm_cluster_hub()
+    finally:
+        restore_gcp_configuration(gcp_params=gcp_params)
 
 
 if __name__ == "__main__":

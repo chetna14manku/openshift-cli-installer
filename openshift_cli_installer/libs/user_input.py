@@ -40,6 +40,7 @@ class UserInput:
         self.aws_access_key_id = self.user_kwargs.get("aws_access_key_id")
         self.aws_secret_access_key = self.user_kwargs.get("aws_secret_access_key")
         self.aws_account_id = self.user_kwargs.get("aws_account_id")
+        self.gcp_service_account_file = self.user_kwargs.get("gcp_service_account_file")
         self.clusters = self.get_clusters_from_user_input()
         self.ocm_token = self.user_kwargs.get("ocm_token")
         self.parallel = False if self.clusters and len(self.clusters) == 1 else self.user_kwargs.get("parallel")
@@ -62,7 +63,6 @@ class UserInput:
         self.registry_config_file = self.user_kwargs.get("registry_config_file")
         self.ssh_key_file = self.user_kwargs.get("ssh_key_file")
         self.docker_config_file = self.user_kwargs.get("docker_config_file")
-        self.gcp_service_account_file = self.user_kwargs.get("gcp_service_account_file")
         self.must_gather_output_dir = self.user_kwargs.get("must_gather_output_dir")
         self.create = self.action == CREATE_STR
 
@@ -95,6 +95,8 @@ class UserInput:
             )
             _cluster["aws-access-key-id"] = aws_access_key_id
             _cluster["aws-secret-access-key"] = aws_secret_access_key
+            if self.gcp_service_account_file:
+                _cluster["gcp_service_account_file"] = self.gcp_service_account_file
 
             for key in USER_INPUT_CLUSTER_BOOLEAN_KEYS:
                 cluster_key_value = _cluster.get(key)

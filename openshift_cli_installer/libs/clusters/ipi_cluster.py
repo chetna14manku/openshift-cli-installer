@@ -1,9 +1,5 @@
 import os
 import shlex
-import json
-import shutil
-from pathlib import Path
-import shortuuid
 
 import click
 import yaml
@@ -22,6 +18,7 @@ from openshift_cli_installer.utils.general import (
     get_local_ssh_key,
     zip_and_upload_to_s3,
 )
+from openshift_cli_installer.utils.gcp_utils import get_gcp_project_id
 
 
 class IpiCluster(OCPCluster):
@@ -102,7 +99,7 @@ class IpiCluster(OCPCluster):
         if worker_replicas := self.cluster.get("worker-replicas"):
             terraform_parameters["worker_replicas"] = worker_replicas
 
-        if gcp_project_id := self.cluster.get("gcp_project_id"):
+        if gcp_project_id := getattr(self, "gcp_project_id", None):
             terraform_parameters["gcp_project_id"] = gcp_project_id
 
         if fips := self.cluster.get("fips"):
@@ -198,57 +195,7 @@ class GcpIpiCluster(IpiCluster):
         self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
 
         self.platform = GCP_STR
-        self.cluster["gcp_project_id"] = self.get_gcp_project_id()
+        self.gcp_project_id = get_gcp_project_id(
+            gcp_service_account_file=kwargs["ocp_cluster"]["gcp_service_account_file"]
+        )
         super().__init__(**kwargs)
-
-        self.gcp_sa_file_dir = os.path.join(os.path.expanduser("~"), ".gcp")
-        self.openshift_installer_gcp_sa_file_path = os.path.join(self.gcp_sa_file_dir, "osServiceAccount.json")
-        self.backup_existing_gcp_sa_file_path = os.path.join("/tmp", f"installerTemp{shortuuid.uuid()}.json")
-        self.set_gcp_service_account_file()
-
-    def get_gcp_project_id(self):
-        with open(self.gcp_service_account_file, "r") as fd:
-            gcp_sa_file_content = json.load(fd)
-
-        return gcp_sa_file_content["project_id"]
-
-    def set_gcp_service_account_file(self):
-        """
-        Saves provided GCP Service Account file at location '~/.gcp/osServiceAccount.json'
-
-        If there is already file exists at this path, it will be copied to tmp file first.
-
-        """
-        if os.path.exists(self.openshift_installer_gcp_sa_file_path):
-            self.logger.info(
-                f"File {self.openshift_installer_gcp_sa_file_path} already exists. Copying to {self.backup_existing_gcp_sa_file_path}"
-            )
-            shutil.copy(self.openshift_installer_gcp_sa_file_path, self.backup_existing_gcp_sa_file_path)
-        else:
-            Path(self.gcp_sa_file_dir).mkdir(parents=True, exist_ok=True)
-        self.logger.info(f"Saving GCP ServiceAccount file to {self.openshift_installer_gcp_sa_file_path}")
-        shutil.copy(self.gcp_service_account_file, self.openshift_installer_gcp_sa_file_path)
-
-    def unset_gcp_service_account_file(self):
-        """
-        Restores location '~/.gcp/osServiceAccount.json'
-
-        Copy file from tmp location to '~/.gcp/osServiceAccount.json' if exists before,
-        Otherwise removes the directory '~/.gcp'
-
-        """
-        if os.path.exists(self.backup_existing_gcp_sa_file_path):
-            self.logger.info(f"Restoring previous file contents of {self.openshift_installer_gcp_sa_file_path}")
-            shutil.copy(self.backup_existing_gcp_sa_file_path, self.openshift_installer_gcp_sa_file_path)
-            os.remove(self.backup_existing_gcp_sa_file_path)
-        else:
-            self.logger.info(f"Deleting path {self.openshift_installer_gcp_sa_file_path}")
-            shutil.rmtree(self.gcp_sa_file_dir)
-
-    def create_cluster(self):
-        super().create_cluster()
-        self.unset_gcp_service_account_file()
-
-    def destroy_cluster(self):
-        super().destroy_cluster()
-        self.unset_gcp_service_account_file()

@@ -144,7 +144,7 @@ class OCPClusters(UserInput):
 
     def is_region_support_gcp(self):
         if _clusters := self.gcp_ipi_clusters + self.gcp_osd_clusters:
-            self.logger.info("Check if regions are GCP-supported.")
+            self.logger.info(f"Check if regions are {GCP_STR}-supported.")
             supported_regions = get_gcp_regions(gcp_service_account_file=self.gcp_service_account_file)
             unsupported_regions = []
             for _cluster in _clusters:

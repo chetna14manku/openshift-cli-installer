@@ -216,9 +216,9 @@ def main(**kwargs):
     if kwargs["dry_run"]:
         return
 
-    try:
-        gcp_params = set_gcp_configuration(user_input=user_input)
+    gcp_params = set_gcp_configuration(user_input=user_input)
 
+    try:
         if (
             kwargs["destroy_clusters_from_s3_bucket"]
             or kwargs["destroy_clusters_from_install_data_directory"]

@@ -18,7 +18,7 @@ from openshift_cli_installer.utils.general import (
     get_local_ssh_key,
     zip_and_upload_to_s3,
 )
-from openshift_cli_installer.utils.gcp_utils import get_gcp_project_id
+from openshift_cli_installer.utils.general import get_dict_from_json
 
 
 class IpiCluster(OCPCluster):
@@ -27,17 +27,14 @@ class IpiCluster(OCPCluster):
         self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
         self.log_level = self.cluster.get("log_level", "error")
 
+        self.platform = None
+        self.gcp_project_id = None
         if kwargs.get("destroy_from_s3_bucket_or_local_directory"):
             self._ipi_download_installer()
         else:
             self.openshift_install_binary_path = None
             self.ipi_base_available_versions = None
             self.cluster["ocm-env"] = self.cluster_info["ocm-env"] = PRODUCTION_STR
-
-            self._prepare_ipi_cluster()
-            self.dump_cluster_data_to_file()
-
-        self.prepare_cluster_data()
 
     def _prepare_ipi_cluster(self):
         self.ipi_base_available_versions = get_ipi_cluster_versions()
@@ -99,8 +96,8 @@ class IpiCluster(OCPCluster):
         if worker_replicas := self.cluster.get("worker-replicas"):
             terraform_parameters["worker_replicas"] = worker_replicas
 
-        if gcp_project_id := getattr(self, "gcp_project_id", None):
-            terraform_parameters["gcp_project_id"] = gcp_project_id
+        if self.gcp_project_id:
+            terraform_parameters["gcp_project_id"] = self.gcp_project_id
 
         if fips := self.cluster.get("fips"):
             terraform_parameters["fips"] = fips
@@ -185,17 +182,25 @@ class IpiCluster(OCPCluster):
 
 class AwsIpiCluster(IpiCluster):
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
         self.platform = AWS_STR
-        super().__init__(**kwargs)
+        if not kwargs.get("destroy_from_s3_bucket_or_local_directory"):
+            self._prepare_ipi_cluster()
+            self.dump_cluster_data_to_file()
+
+        self.prepare_cluster_data()
 
 
 class GcpIpiCluster(IpiCluster):
     def __init__(self, **kwargs):
-        self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
-
-        self.platform = GCP_STR
-        self.gcp_project_id = get_gcp_project_id(
-            gcp_service_account_file=kwargs["ocp_cluster"]["gcp_service_account_file"]
-        )
         super().__init__(**kwargs)
+        self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
+        self.platform = GCP_STR
+        self.gcp_service_account_file = kwargs["ocp_cluster"]["gcp_service_account_file"]
+        self.gcp_project_id = get_dict_from_json(gcp_service_account_file=self.gcp_service_account_file)["project_id"]
+        if not kwargs.get("destroy_from_s3_bucket_or_local_directory"):
+            self._prepare_ipi_cluster()
+            self.dump_cluster_data_to_file()
+
+        self.prepare_cluster_data()

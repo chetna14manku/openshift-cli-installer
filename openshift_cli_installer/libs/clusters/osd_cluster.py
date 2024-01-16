@@ -4,8 +4,7 @@ from simple_logger.logger import get_logger
 from openshift_cli_installer.libs.clusters.ocm_cluster import OcmCluster
 from openshift_cli_installer.utils.cluster_versions import filter_versions
 from openshift_cli_installer.utils.const import AWS_OSD_STR, GCP_OSD_STR
-from openshift_cli_installer.utils.general import zip_and_upload_to_s3
-from openshift_cli_installer.utils.gcp_utils import get_service_account_dict_from_file
+from openshift_cli_installer.utils.general import zip_and_upload_to_s3, get_dict_from_json
 
 
 class OsdCluster(OcmCluster):
@@ -13,9 +12,7 @@ class OsdCluster(OcmCluster):
         super().__init__(**kwargs)
         self.logger = get_logger(f"{self.__class__.__module__}-{self.__class__.__name__}")
 
-        self.gcp_service_account = get_service_account_dict_from_file(
-            gcp_service_account_file=self.gcp_service_account_file
-        )
+        self.gcp_service_account = get_dict_from_json(gcp_service_account_file=self.gcp_service_account_file)
 
         if self.create:
             self.cluster_info["aws-account-id"] = self.aws_account_id

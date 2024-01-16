@@ -63,5 +63,9 @@ def restore_gcp_configuration(gcp_params):
 
 
 def is_clusters_gcp_platform(clusters):
+    """
+    Checks if any cluster platform is GCP.
+
+    """
     if any([_cluster["platform"] == GCP_STR for _cluster in clusters]):
         return True

@@ -3,6 +3,7 @@ import shlex
 
 import click
 import yaml
+import tempfile
 from ocp_utilities.utils import run_command
 from simple_logger.logger import get_logger
 
@@ -55,7 +56,7 @@ class IpiCluster(OCPCluster):
     def _ipi_download_installer(self):
         openshift_install_str = "openshift-install"
         version_url = self.cluster_info["version-url"]
-        binary_dir = os.path.join("/tmp", version_url)
+        binary_dir = os.path.join(tempfile.TemporaryDirectory().name, version_url)
         self.openshift_install_binary_path = os.path.join(binary_dir, openshift_install_str)
         rc, _, err = run_command(
             command=shlex.split(

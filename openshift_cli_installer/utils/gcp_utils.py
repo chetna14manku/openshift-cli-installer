@@ -16,31 +16,28 @@ def set_gcp_configuration(user_input):
     If file already exists at this path, it will be copied to tmp file first.
 
     Returns:
-        dict: A dictionary of parameters needed for setting GCP Service Account file.
+        dict: A dictionary of parameters needed for setting/restoring GCP Service Account file
 
     """
-    if is_clusters_gcp_platform(user_input.clusters):
+    gcp_params = {}
+    if any([_cluster["platform"] == GCP_STR for _cluster in user_input.clusters]):
         gcp_sa_file_dir = os.path.join(os.path.expanduser("~"), ".gcp")
         openshift_installer_gcp_sa_file_path = os.path.join(gcp_sa_file_dir, "osServiceAccount.json")
-        gcp_params = {
-            "gcp_sa_file_dir": gcp_sa_file_dir,
-            "openshift_installer_gcp_sa_file_path": openshift_installer_gcp_sa_file_path,
-        }
-        gcp_params.update({"gcp_platform": True})
+        gcp_params["gcp_sa_file_dir"] = gcp_sa_file_dir
+        gcp_params["openshift_installer_gcp_sa_file_path"] = openshift_installer_gcp_sa_file_path
 
         if os.path.exists(openshift_installer_gcp_sa_file_path):
-            backup_existing_gcp_sa_file_path = tempfile.NamedTemporaryFile(suffix="-installer.json").name
-            gcp_params.update({"backup_existing_gcp_sa_file_path": backup_existing_gcp_sa_file_path})
+            gcp_params["backup_existing_gcp_sa_file_path"] = tempfile.NamedTemporaryFile(suffix="-installer.json").name
             LOGGER.info(
-                f"File {openshift_installer_gcp_sa_file_path} already exists. Copying to {backup_existing_gcp_sa_file_path}"
+                f"File {openshift_installer_gcp_sa_file_path} already exists. Copying to {gcp_params['backup_existing_gcp_sa_file_path']}"
             )
-            shutil.copy(openshift_installer_gcp_sa_file_path, backup_existing_gcp_sa_file_path)
+            shutil.copy(openshift_installer_gcp_sa_file_path, gcp_params["backup_existing_gcp_sa_file_path"])
         else:
             Path(gcp_sa_file_dir).mkdir(parents=True, exist_ok=True)
         LOGGER.info(f"Saving GCP ServiceAccount file to {openshift_installer_gcp_sa_file_path}")
         shutil.copy(user_input.gcp_service_account_file, openshift_installer_gcp_sa_file_path)
 
-        return gcp_params
+    return gcp_params
 
 
 def restore_gcp_configuration(gcp_params):
@@ -60,12 +57,3 @@ def restore_gcp_configuration(gcp_params):
         else:
             LOGGER.info(f"Deleting path {openshift_installer_gcp_sa_file_path}")
             shutil.rmtree(gcp_params["gcp_sa_file_dir"])
-
-
-def is_clusters_gcp_platform(clusters):
-    """
-    Checks if any cluster platform is GCP.
-
-    """
-    if any([_cluster["platform"] == GCP_STR for _cluster in clusters]):
-        return True

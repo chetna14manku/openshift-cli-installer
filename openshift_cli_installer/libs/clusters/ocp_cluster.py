@@ -58,7 +58,7 @@ class OCPCluster(UserInput):
         else:
             self.cluster_info = copy.deepcopy(self.cluster)
 
-            if self.create:
+            if self.create and self.select_aws_auto_region:
                 self.check_and_assign_aws_cluster_region()
 
             self.cluster_info.update({

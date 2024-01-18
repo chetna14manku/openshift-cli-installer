@@ -145,7 +145,7 @@ Destroy clusters from S3 bucket, --s3-bucket-name is required and optional --s3-
     "--destroy-clusters-from-s3-bucket-query",
     help="""
 \b
-Detroy cluster(s) from S3 bucket which match only files that have it.
+Destroy cluster(s) from S3 bucket which match only files that have it.
     """,
     show_default=True,
 )
@@ -193,6 +193,12 @@ Path to must-gather output directory.
 must-gather will try to collect data when cluster installation fails and cluster can be accessed.
 """,
     type=click.Path(exists=True),
+)
+@click.option(
+    "--select-aws-auto-region",
+    help="For selecting auto-region for AWS clusters if region not provided in cluster dictionary.",
+    is_flag=True,
+    show_default=True,
 )
 @click.option(
     "--dry-run",

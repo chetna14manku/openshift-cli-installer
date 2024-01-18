@@ -145,12 +145,12 @@ class OCPCluster(UserInput):
         )
 
     def check_and_assign_aws_cluster_region(self):
-        if self.cluster_info["platform"] in [AWS_STR, AWS_OSD_STR]:
-            if not self.cluster_info.get("region"):
-                region, vpcs = None, None
+        if not self.cluster_info.get("region"):
+            if self.cluster_info["platform"] in [AWS_STR, AWS_OSD_STR]:
+                region, vpcs = 0, 0
                 for _region in aws_region_names():
                     num_vpcs = len(boto3.client(service_name="ec2", region_name=_region).describe_vpcs()["Vpcs"])
-                    if vpcs is None or num_vpcs < vpcs:
+                    if num_vpcs <= vpcs:
                         region = _region
                         vpcs = num_vpcs
 

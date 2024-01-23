@@ -1,5 +1,4 @@
 import base64
-import boto3
 import copy
 import os
 import shlex
@@ -25,7 +24,7 @@ from ocp_utilities.infra import get_client
 from ocp_utilities.must_gather import run_must_gather
 from ocp_utilities.utils import run_command
 from simple_logger.logger import get_logger
-from clouds.aws.utilities.delete_aws_resources import aws_region_names
+from clouds.aws.aws_utils import aws_region_names, get_least_crowded_aws_vpc_region
 
 from openshift_cli_installer.libs.user_input import UserInput
 from openshift_cli_installer.utils.cluster_versions import (
@@ -58,21 +57,24 @@ class OCPCluster(UserInput):
         else:
             self.cluster_info = copy.deepcopy(self.cluster)
 
-            if self.create and self.select_aws_auto_region:
-                self.check_and_assign_aws_cluster_region()
-
             self.cluster_info.update({
                 "display-name": self.cluster_info["name"],
                 "user-requested-version": self.cluster_info["version"],
                 "shortuuid": self.s3_bucket_path_uuid or shortuuid.uuid(),
                 "aws-access-key-id": self.cluster.pop("aws-access-key-id", None),
                 "aws-secret-access-key": self.cluster.pop("aws-secret-access-key", None),
-                "acm": self.cluster.get("acm") is True,
-                "acm-observability": self.cluster.get("acm-observability") is True,
-                "acm-observability-s3-region": self.cluster.get(
-                    "acm-observability-s3-region", self.cluster_info.get("region")
-                ),
             })
+
+            if self.create:
+                if self.cluster_info.get("auto-region") is True:
+                    self.check_and_assign_aws_cluster_region()
+
+                self.cluster_info["acm"] = self.cluster.get("acm") is True
+                self.cluster_info["acm-observability"] = self.cluster.get("acm-observability") is True
+                self.cluster_info["acm-observability-s3-region"] = self.cluster.get(
+                    "acm-observability-s3-region", self.cluster_info["region"]
+                )
+
             self.all_available_versions = {}
 
             self.cluster_info["stream"] = get_cluster_stream(cluster_data=self.cluster)
@@ -145,17 +147,11 @@ class OCPCluster(UserInput):
         )
 
     def check_and_assign_aws_cluster_region(self):
-        if not self.cluster_info.get("region"):
-            if self.cluster_info["platform"] in [AWS_STR, AWS_OSD_STR]:
-                region, vpcs = 0, 0
-                for _region in aws_region_names():
-                    num_vpcs = len(boto3.client(service_name="ec2", region_name=_region).describe_vpcs()["Vpcs"])
-                    if num_vpcs <= vpcs:
-                        region = _region
-                        vpcs = num_vpcs
+        if self.cluster_info["platform"] in [AWS_STR, AWS_OSD_STR]:
+            region = get_least_crowded_aws_vpc_region(region_list=aws_region_names())
 
-                self.logger.info(f"Assigning region {region} to cluster {self.cluster_info['name']}")
-                self.cluster_info["region"] = region
+            self.logger.info(f"Assigning region {region} to cluster {self.cluster_info['name']}")
+            self.cluster_info["region"] = region
 
     def set_cluster_install_version(self):
         version = self.cluster_info["user-requested-version"]

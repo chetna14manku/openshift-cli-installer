@@ -209,10 +209,20 @@ podman run quay.io/redhat_msi/openshift-cli-installer \
     --registry-config-file=registry-config.json \
     --s3-bucket-name=openshift-cli-installer \
     --s3-bucket-path=install-folders \
-    --cluster 'name=ipi1;base-domain=aws.interop.ccitredhat.com;platform=aws;region=us-east-2;version=4.14.0-ec.2;worker-flavor=m5.xlarge;log_level=info'
+    --cluster 'name=ipi1;base-domain=gcp.interop.ccitredhat.com;platform=gcp;region=us-east1;version=4.14.0-ec.2;worker-flavor=custom-4-16384;log_level=info'
 ```
   * Default `log_level=error` is set for cluster config to hide the openshift-installer logs which contains kubeadmin password.
-  * If cluster `region` not passed, it will be selected by automation which have the least number of VPCs.
+
+```
+podman run quay.io/redhat_msi/openshift-cli-installer \
+    --action create \
+    --registry-config-file=registry-config.json \
+    --s3-bucket-name=openshift-cli-installer \
+    --s3-bucket-path=install-folders \
+    --cluster 'name=ipi2;base-domain=aws.interop.ccitredhat.com;platform=aws;auto-region=True;version=4.14.0-ec.2;worker-flavor= m5.4xlarge'
+```
+
+  * If cluster have `auto-region=True` param, then `region` param will be assigned to a region which have the least number of VPCs.
 
 ##### ROSA cluster
 

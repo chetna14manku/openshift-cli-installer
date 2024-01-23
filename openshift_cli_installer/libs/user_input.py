@@ -64,7 +64,6 @@ class UserInput:
         self.ssh_key_file = self.user_kwargs.get("ssh_key_file")
         self.docker_config_file = self.user_kwargs.get("docker_config_file")
         self.must_gather_output_dir = self.user_kwargs.get("must_gather_output_dir")
-        self.select_aws_auto_region = self.user_kwargs.get("select_aws_auto_region")
         self.create = self.action == CREATE_STR
 
         # We need to make sure that we don't process the same input twice

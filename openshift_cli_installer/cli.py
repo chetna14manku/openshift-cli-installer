@@ -195,12 +195,6 @@ must-gather will try to collect data when cluster installation fails and cluster
     type=click.Path(exists=True),
 )
 @click.option(
-    "--select-aws-auto-region",
-    help="For selecting auto-region for AWS clusters if region not provided in cluster dictionary.",
-    is_flag=True,
-    show_default=True,
-)
-@click.option(
     "--dry-run",
     help="For testing, only verify user input",
     is_flag=True,

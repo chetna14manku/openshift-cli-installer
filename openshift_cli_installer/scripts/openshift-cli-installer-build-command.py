@@ -53,8 +53,6 @@ def main():
         cmd += " --destroy-clusters-from-install-data-directory"
     if os_env.get("DESTROY_CLUSTERS_FROM_INSTALL_DATA_DIRECTORY_USING_S3_BUCKET") == "true":
         cmd += " --destroy-clusters-from-install-data-directory-using-s3-bucket"
-    if os_env.get("SELECT_AWS_AUTO_REGION") == "true":
-        cmd += " --select-aws-auto-region"
 
     print(cmd)
 

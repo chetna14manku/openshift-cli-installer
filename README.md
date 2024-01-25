@@ -33,6 +33,7 @@ Action also can be passed to the CLI as `--action create/destroy` instead of spe
   * The data is used for cluster destroy.
   * `platform=aws`: Must pass in cluster parameters
   * `base-domain`: cluster parameter is mandatory
+  * `auto-region=True`: Optional cluster parameter for assigning `region` param to a region which have the least number of VPCs.
   * `--registry-config-file`: registry-config json file path, can be obtained from [openshift local cluster](https://console.redhat.com/openshift/create/local)
   * `--docker-config-file`: Path to Docker config.json file, defaults to `~/.docker/config.json`. File must include token for `registry.ci.openshift.org`
   * `--ssh-key-file`: id_rsa file path
@@ -51,6 +52,7 @@ Action also can be passed to the CLI as `--action create/destroy` instead of spe
 
 * AWS OSD clusters:
   * `platform=aws-osd`: Must pass in cluster parameters
+  * `auto-region=True`: Optional cluster parameter for assigning `region` param to a region which have the least number of VPCs.
   * `--aws-access-key-id`: AWS access key ID
   * `--aws-secret-access-key`: AWS secret access key
   * `--aws-account-id`: AWS account ID
@@ -221,8 +223,6 @@ podman run quay.io/redhat_msi/openshift-cli-installer \
     --s3-bucket-path=install-folders \
     --cluster 'name=ipi2;base-domain=aws.interop.ccitredhat.com;platform=aws;auto-region=True;version=4.14.0-ec.2;worker-flavor= m5.4xlarge'
 ```
-
-  * If cluster have `auto-region=True` param, then `region` param will be assigned to a region which have the least number of VPCs.
 
 ##### ROSA cluster
 

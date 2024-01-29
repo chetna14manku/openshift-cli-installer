@@ -741,12 +741,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.66"
+version = "1.0.68"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.66.tar.gz", hash = "sha256:7a6e3a2f5defa20cf578c08aa5f3080433c7cd22e0a92f0d85bd5cb28049a8e3"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.68.tar.gz", hash = "sha256:0fdaa416118fc543231e3140a19ed549e1b0a7afcd4d167baf5841f19d2d7241"},
 ]
 
 [package.dependencies]
@@ -765,19 +765,17 @@ timeout-sampler = ">=0.0.1,<0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "5.0.16"
+version = "5.0.20"
 description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_python_utilities-5.0.16.tar.gz", hash = "sha256:64304c69a6ede37e884ad94eea6324148f3648da25c27a4f5fcfe023d9595bf6"},
+    {file = "openshift_python_utilities-5.0.20.tar.gz", hash = "sha256:b8e5da341b7503287e4f7eaf01981ec37913ce70709775e9bce34d6c5fde6654"},
 ]
 
 [package.dependencies]
 colorlog = ">=6.7.0,<7.0.0"
 openshift-python-wrapper-data-collector = ">=1.0.4,<2.0.0"
-pytest = ">=7.4.0,<8.0.0"
-pytest-testconfig = ">=0.2.0,<0.3.0"
 python-simple-logger = ">=1.0.5,<2.0.0"
 pyyaml = ">=6.0.1,<7.0.0"
 timeout-sampler = ">=0.0.1,<0.0.2"
@@ -1017,13 +1015,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
-version = "7.4.4"
+version = "8.0.0"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
-    {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
+    {file = "pytest-8.0.0-py3-none-any.whl", hash = "sha256:50fb9cbe836c3f20f0dfa99c565201fb75dc54c8d76373cd1bde06b06657bdb6"},
+    {file = "pytest-8.0.0.tar.gz", hash = "sha256:249b1b0864530ba251b7438274c4d251c58d868edaaec8762893ad4a0d71c36c"},
 ]
 
 [package.dependencies]
@@ -1031,7 +1029,7 @@ colorama = {version = "*", markers = "sys_platform == \"win32\""}
 exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 iniconfig = "*"
 packaging = "*"
-pluggy = ">=0.12,<2.0"
+pluggy = ">=1.3.0,<2.0"
 tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
@@ -1264,12 +1262,12 @@ rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 
 [[package]]
 name = "rosa-python-client"
-version = "1.0.44"
+version = "1.0.45"
 description = "Wrapper for rosa cli"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "rosa_python_client-1.0.44.tar.gz", hash = "sha256:e309ee4c7ff92d7afbf85d4680e5dccc7b7a6945198a34cd93eba930427c4b97"},
+    {file = "rosa_python_client-1.0.45.tar.gz", hash = "sha256:18e8134540cb81addc24546989f189b151cc636d2753c219194d6e3f4607dac8"},
 ]
 
 [package.dependencies]
@@ -1504,4 +1502,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "4aec73f8eaa551874987720b2ff9851a0c7438b4b0521fe0ee78838e98bacdfa"
+content-hash = "794deef17ba4659f9e61e364c28ae31d68242f4dda50913ef672d119d54d7618"

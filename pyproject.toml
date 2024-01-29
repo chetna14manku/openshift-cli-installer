@@ -36,20 +36,23 @@ rosa-python-client = "^1.0.36"
 openshift-cluster-management-python-wrapper = "^1.0.54"
 python-terraform = "^0.10.1"
 semver = "^3.0.1"
-pytest = "^7.4.0"
 openshift-python-utilities = "^5.0.0"
 pyaml-env = "^1.2.1"
 google-cloud-compute = "^1.14.1"
 redhat-qe-cloud-tools = "^1.0.19"
 python-simple-logger = "^1.0.7"
-ipdb = "^0.13.13"
 ruff = "^0.1.5"
 timeout-sampler = "^0.0.1"
 openshift-python-wrapper = "^10.0.0"
+pytest-testconfig = "^0.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
+ipdb = "^0.13.13"
 ipython = "*"
+
+[tool.poetry.group.tests.dependencies]
+pytest = "^8.0.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true

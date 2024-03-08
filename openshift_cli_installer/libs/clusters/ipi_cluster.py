@@ -1,6 +1,7 @@
 import os
 import re
 import shlex
+import shutil
 
 import click
 import requests
@@ -51,6 +52,7 @@ class IpiCluster(OCPCluster):
             )
         )
         self.set_cluster_install_version()
+        self._set_docker_config_file()
         self._set_install_version_url()
         self._ipi_download_installer()
         if self.create:
@@ -110,6 +112,12 @@ class IpiCluster(OCPCluster):
 
         with open(os.path.join(self.cluster_info["cluster-dir"], "install-config.yaml"), "w") as fd:
             fd.write(yaml.dump(cluster_install_config))
+
+    def _set_docker_config_file(self):
+        docker_config_dir = tempfile.mkdtemp()
+        os.environ["DOCKER_CONFIG"] = docker_config_dir
+        ipi_docker_config_file = os.path.join(docker_config_dir, "config.json")
+        shutil.copy(self.docker_config_file, ipi_docker_config_file)
 
     def _set_install_version_url(self):
         version_url = None

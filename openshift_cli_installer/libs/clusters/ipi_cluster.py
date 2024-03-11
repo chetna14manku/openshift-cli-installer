@@ -71,6 +71,8 @@ class IpiCluster(OCPCluster):
             ),
             check=False,
         )
+        shutil.rmtree(self.ipi_docker_config_dir)
+
         if not rc:
             self.logger.error(
                 f"{self.log_prefix}: Failed to get {openshift_install_str} for version {version_url}, error: {err}",
@@ -114,9 +116,9 @@ class IpiCluster(OCPCluster):
             fd.write(yaml.dump(cluster_install_config))
 
     def _set_docker_config_file(self):
-        docker_config_dir = tempfile.mkdtemp()
-        os.environ["DOCKER_CONFIG"] = docker_config_dir
-        ipi_docker_config_file = os.path.join(docker_config_dir, "config.json")
+        self.ipi_docker_config_dir = tempfile.mkdtemp()
+        os.environ["DOCKER_CONFIG"] = self.ipi_docker_config_dir
+        ipi_docker_config_file = os.path.join(self.ipi_docker_config_dir, "config.json")
         shutil.copy(self.docker_config_file, ipi_docker_config_file)
 
     def _set_install_version_url(self):

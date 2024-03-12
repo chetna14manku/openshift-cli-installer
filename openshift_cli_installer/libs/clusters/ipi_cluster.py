@@ -34,6 +34,7 @@ class IpiCluster(OCPCluster):
 
         self.platform = None
         self.gcp_project_id = None
+        self.ipi_docker_config_dir = None
         if kwargs.get("destroy_from_s3_bucket_or_local_directory"):
             self._ipi_download_installer()
         else:
@@ -52,7 +53,6 @@ class IpiCluster(OCPCluster):
             )
         )
         self.set_cluster_install_version()
-        self._set_docker_config_file()
         self._set_install_version_url()
         self._ipi_download_installer()
         if self.create:
@@ -63,6 +63,7 @@ class IpiCluster(OCPCluster):
         version_url = self.cluster_info["version-url"]
         binary_dir = os.path.join(tempfile.TemporaryDirectory().name, version_url)
         self.openshift_install_binary_path = os.path.join(binary_dir, openshift_install_str)
+        self._set_docker_config_file()
         rc, _, err = run_command(
             command=shlex.split(
                 "oc adm release extract "

@@ -119,8 +119,7 @@ class IpiCluster(OCPCluster):
     def _set_docker_config_file(self):
         self.ipi_docker_config_dir = tempfile.mkdtemp()
         os.environ["DOCKER_CONFIG"] = self.ipi_docker_config_dir
-        ipi_docker_config_file = os.path.join(self.ipi_docker_config_dir, "config.json")
-        shutil.copy(self.docker_config_file, ipi_docker_config_file)
+        shutil.copy(self.docker_config_file, os.path.join(self.ipi_docker_config_dir, "config.json"))
 
     def _set_install_version_url(self):
         version_url = None

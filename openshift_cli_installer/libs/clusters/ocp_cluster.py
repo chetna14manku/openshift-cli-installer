@@ -466,4 +466,4 @@ class OCPCluster(UserInput):
             return self.cluster_info["name"]
 
         name_prefix = str(self.cluster_info["name-prefix"])
-        return f"{name_prefix}-{self.cluster_shortuuid[:14-len(name_prefix)]}"
+        return f"{name_prefix}-{self.cluster_shortuuid[: 14 - len(name_prefix)]}"

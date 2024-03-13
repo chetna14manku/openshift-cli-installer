@@ -34,7 +34,7 @@ class IpiCluster(OCPCluster):
 
         self.platform = None
         self.gcp_project_id = None
-        self.ipi_docker_config_dir = None
+        self.ipi_docker_config_file = None
         if kwargs.get("destroy_from_s3_bucket_or_local_directory"):
             self._ipi_download_installer()
         else:
@@ -72,7 +72,7 @@ class IpiCluster(OCPCluster):
             ),
             check=False,
         )
-        shutil.rmtree(self.ipi_docker_config_dir)
+        os.remove(self.ipi_docker_config_file)
 
         if not rc:
             self.logger.error(
@@ -117,9 +117,13 @@ class IpiCluster(OCPCluster):
             fd.write(yaml.dump(cluster_install_config))
 
     def _set_docker_config_file(self):
-        self.ipi_docker_config_dir = tempfile.mkdtemp()
-        os.environ["DOCKER_CONFIG"] = self.ipi_docker_config_dir
-        shutil.copy(self.docker_config_file, os.path.join(self.ipi_docker_config_dir, "config.json"))
+        ipi_docker_config_dir = os.path.dirname(self.docker_config_file)
+        if not ipi_docker_config_dir:
+            ipi_docker_config_dir = os.getcwd()
+
+        os.environ["DOCKER_CONFIG"] = ipi_docker_config_dir
+        self.ipi_docker_config_file = os.path.join(ipi_docker_config_dir, "config.json")
+        shutil.copy(self.docker_config_file, self.ipi_docker_config_file)
 
     def _set_install_version_url(self):
         version_url = None

@@ -1,7 +1,7 @@
 import os
 import re
 import shlex
-import shutil
+from contextlib import contextmanager
 
 import click
 import requests
@@ -34,7 +34,10 @@ class IpiCluster(OCPCluster):
 
         self.platform = None
         self.gcp_project_id = None
-        self.ipi_docker_config_file = None
+        self.unified_pull_secret = generate_unified_pull_secret(
+            registry_config_file=self.registry_config_file,
+            docker_config_file=self.docker_config_file,
+        )
         if kwargs.get("destroy_from_s3_bucket_or_local_directory"):
             self._ipi_download_installer()
         else:
@@ -63,28 +66,23 @@ class IpiCluster(OCPCluster):
         version_url = self.cluster_info["version-url"]
         binary_dir = os.path.join(tempfile.TemporaryDirectory().name, version_url)
         self.openshift_install_binary_path = os.path.join(binary_dir, openshift_install_str)
-        self._set_docker_config_file()
-        rc, _, err = run_command(
-            command=shlex.split(
-                "oc adm release extract "
-                f"{version_url} "
-                f"--command={openshift_install_str} --to={binary_dir} --registry-config={self.registry_config_file}"
-            ),
-            check=False,
-        )
-        os.remove(self.ipi_docker_config_file)
-
-        if not rc:
-            self.logger.error(
-                f"{self.log_prefix}: Failed to get {openshift_install_str} for version {version_url}, error: {err}",
+        with self._set_docker_config_file() as unified_pull_secret:
+            rc, _, err = run_command(
+                command=shlex.split(
+                    "oc adm release extract "
+                    f"{version_url} "
+                    f"--command={openshift_install_str} --to={binary_dir} --registry-config={unified_pull_secret}"
+                ),
+                check=False,
             )
-            raise click.Abort()
+
+            if not rc:
+                self.logger.error(
+                    f"{self.log_prefix}: Failed to get {openshift_install_str} for version {version_url}, error: {err}",
+                )
+                raise click.Abort()
 
     def _create_install_config_file(self):
-        self.pull_secret = generate_unified_pull_secret(
-            registry_config_file=self.registry_config_file,
-            docker_config_file=self.docker_config_file,
-        )
         self.ssh_key = get_local_ssh_key(ssh_key_file=self.ssh_key_file)
 
         terraform_parameters = {
@@ -93,7 +91,7 @@ class IpiCluster(OCPCluster):
             "base_domain": self.cluster_info["base-domain"],
             "platform": self.cluster_info["platform"],
             "ssh_key": self.ssh_key,
-            "pull_secret": self.pull_secret,
+            "pull_secret": self.unified_pull_secret,
         }
 
         if worker_flavor := self.cluster.get("worker-flavor"):
@@ -116,14 +114,11 @@ class IpiCluster(OCPCluster):
         with open(os.path.join(self.cluster_info["cluster-dir"], "install-config.yaml"), "w") as fd:
             fd.write(yaml.dump(cluster_install_config))
 
+    @contextmanager
     def _set_docker_config_file(self):
-        ipi_docker_config_dir = os.path.dirname(self.docker_config_file)
-        if not ipi_docker_config_dir:
-            ipi_docker_config_dir = os.getcwd()
-
-        os.environ["DOCKER_CONFIG"] = ipi_docker_config_dir
-        self.ipi_docker_config_file = os.path.join(ipi_docker_config_dir, "config.json")
-        shutil.copy(self.docker_config_file, self.ipi_docker_config_file)
+        with tempfile.NamedTemporaryFile(prefix="pull-secret-") as fp:
+            fp.write(bytes(self.unified_pull_secret, "utf-8"))
+            yield fp.name
 
     def _set_install_version_url(self):
         version_url = None

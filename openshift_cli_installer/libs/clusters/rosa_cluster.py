@@ -218,7 +218,7 @@ class RosaCluster(OcmCluster):
                 f"{self.log_prefix}: Failed to run cluster create\n{ex}",
             )
             self.set_cluster_auth()
-            if self.must_gather_output_dir:
+            if self.user_input.must_gather_output_dir:
                 self.collect_must_gather()
 
             self.destroy_cluster()

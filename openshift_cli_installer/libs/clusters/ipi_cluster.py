@@ -142,7 +142,7 @@ class IpiCluster(OCPCluster):
 
     def run_installer_command(self, action, raise_on_failure):
         run_after_failed_create_str = (
-            " after cluster creation failed" if action == DESTROY_STR and self.action == CREATE_STR else ""
+            " after cluster creation failed" if action == DESTROY_STR and self.user_input.action == CREATE_STR else ""
         )
         self.logger.info(f"{self.log_prefix}: Running cluster {action}{run_after_failed_create_str}")
         res, out, err = run_command(
@@ -166,7 +166,7 @@ class IpiCluster(OCPCluster):
     def create_cluster(self):
         def _rollback_on_error(_ex=None):
             self.logger.error(f"{self.log_prefix}: Failed to create cluster: {_ex or 'No exception'}")
-            if self.must_gather_output_dir:
+            if self.user_input.must_gather_output_dir:
                 self.collect_must_gather()
 
             self.logger.warning(f"{self.log_prefix}: Cleaning cluster leftovers.")

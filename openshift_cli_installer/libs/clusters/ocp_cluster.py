@@ -224,7 +224,7 @@ class OCPCluster:
         name = self.cluster_info["name"]
         try:
             target_dir = os.path.join(
-                self.must_gather_output_dir,
+                self.user_input.must_gather_output_dir,
                 "must-gather",
                 self.cluster_info["platform"],
                 name,

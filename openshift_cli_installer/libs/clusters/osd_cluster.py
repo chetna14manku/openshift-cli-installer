@@ -79,7 +79,7 @@ class OsdCluster(OcmCluster):
             )
             self.set_cluster_auth()
 
-            if self.must_gather_output_dir:
+            if self.user_input.must_gather_output_dir:
                 self.collect_must_gather()
 
             self.destroy_cluster()

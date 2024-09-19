@@ -18,6 +18,7 @@ from openshift_cli_installer.utils.general import (
     zip_and_upload_to_s3,
 )
 from ocp_resources.group import Group
+from rosa.rosa_versions import get_rosa_versions
 from timeout_sampler import TimeoutSampler
 from clouds.aws.roles.roles import get_roles
 
@@ -29,7 +30,12 @@ class RosaCluster(OcmCluster):
         if self.user_input.create:
             self.cluster_info["aws-account-id"] = self.user_input.aws_account_id
             self.assert_hypershift_missing_roles()
-            self.get_rosa_versions()
+            self.rosa_base_available_versions_dict = get_rosa_versions(
+                ocm_client=self.ocm_client,
+                aws_region=self.cluster_info["region"],
+                channel_group=self.cluster_info["channel-group"],
+                hosted_cp=True if self.cluster_info["platform"] == HYPERSHIFT_STR else False,
+            )
             self.cluster["version"] = get_cluster_version_to_install(
                 wanted_version=self.cluster_info["user-requested-version"],
                 base_versions_dict=self.rosa_base_available_versions_dict,

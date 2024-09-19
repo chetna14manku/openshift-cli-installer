@@ -2,14 +2,13 @@ from datetime import datetime, timedelta
 import re
 from typing import Any, Dict, List
 import sys
-import rosa.cli
 from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.versions import Versions
 from simple_logger.logger import get_logger
 
 from openshift_cli_installer.libs.clusters.ocp_cluster import OCPCluster
 from openshift_cli_installer.libs.user_input import UserInput
-from openshift_cli_installer.utils.const import HYPERSHIFT_STR, STAGE_STR
+from openshift_cli_installer.utils.const import STAGE_STR
 from pyhelper_utils.general import tts
 
 
@@ -63,20 +62,3 @@ class OcmCluster(OCPCluster):
                 updated_versions_dict[channel].setdefault(_version_key, []).append(version)
 
         self.osd_base_available_versions_dict.update(updated_versions_dict)
-
-    @cache
-    def get_rosa_versions(self) -> None:
-        _channel_group = self.cluster_info["channel-group"]
-        base_available_versions = rosa.cli.execute(
-            command=(
-                f"list versions --channel-group={_channel_group} "
-                f"{'--hosted-cp' if self.cluster_info['platform'] == HYPERSHIFT_STR else ''}"
-            ),
-            aws_region=self.cluster_info["region"],
-            ocm_client=self.ocm_client,
-        )["out"]
-        _all_versions = [ver["raw_id"] for ver in base_available_versions]
-        self.rosa_base_available_versions_dict[_channel_group] = {}
-        for _version in _all_versions:
-            _version_key = re.findall(r"^\d+.\d+", _version)[0]
-            self.rosa_base_available_versions_dict[_channel_group].setdefault(_version_key, []).append(_version)
